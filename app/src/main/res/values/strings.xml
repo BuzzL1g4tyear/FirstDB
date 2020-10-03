@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">DataBase</string>
+    <string name="red">Красный</string>
+    <string name="name">Имя</string>
+    <string name="num">Номер</string>
+    <string name="add">Добавить</string>
+    <string name="read">Прочитать</string>
+</resources>
