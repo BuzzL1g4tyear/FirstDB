@@ -1,91 +1,69 @@
 package com.example.firstdb;
 
-import android.annotation.SuppressLint;
-import android.content.ContentValues;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.annotation.Nullable;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
+import android.widget.ArrayAdapter;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    Button btn_add, btn_read;
-    EditText text_name, text_numb;
-    TextView text_Area;
+    DB db;
 
-    DB db =  new DB(getApplicationContext());
-
-    public Boolean checkFields(String name,String numb){
-        boolean exist = true;
-        if (name.isEmpty()||numb.isEmpty()) {
-            exist = false;
-            Toast.makeText(this, "Нельзя так, заполните поля", Toast.LENGTH_SHORT).show();
-        }
-        return exist;
-    }
+    private TextView txtName, txtNum;
+    private ListView UsersList;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         db = new DB(this);
-
-        btn_add = (Button) findViewById(R.id.button_add);
-        btn_read = (Button) findViewById(R.id.button_read);
     }
+
     public void onClickAdd(View view) {
-        text_name = (EditText)findViewById(R.id.Name);
-        text_numb = (EditText)findViewById(R.id.numb);
+        txtName = (TextView)findViewById(R.id.Name);
+        txtNum = (TextView)findViewById(R.id.numb);
 
-        String name = text_name.getText().toString();
-        String num = text_numb.getText().toString();
+        String name = txtName.getText().toString();
+        String num = txtNum.getText().toString();
 
-        SQLiteDatabase database = db.getWritableDatabase();
-
-        if(checkFields(name,num)) {
-            ContentValues values = new ContentValues();
-            values.put(DB.KEY_NAME,name);
-            values.put(DB.KEY_NUM,num);
-            long newRowId = database.insert(DB.TABLE_NAME, null, values);
-            Toast.makeText(this, "Ну чё, add!", Toast.LENGTH_SHORT).show();
+        if (txtName.length()!= 0 || txtNum.length()!=0) {
+            AddData(name);
+            AddData(num);
+            txtName.setText("");
+            txtNum.setText("");
+        } else {
+            toastMessage("Что-то введено или нет");
         }
-        db.close();
+    }
+
+    public void AddData(String newEntry) {
+        boolean insertData = db.addData(newEntry);
+        if (insertData) {
+            toastMessage("Данные успешно отправлены!");
+        } else {
+            toastMessage("Едрид мадрид(");
+        }
     }
 
     public void onClickRead(View view){
-        text_Area = (TextView)findViewById(R.id.textView);
-        text_Area.setText("В бд есть:\n");
-
-        SQLiteDatabase database = db.getReadableDatabase();
-
-
-        Cursor cursor = database.query(
-                DB.TABLE_NAME,   // The table to query
-                null,             // The array of columns to return (pass null to get all)
-                null,
-                null,          // The values for the WHERE clause
-                null,                   // don't group the rows
-                null,                   // don't filter by row groups
-                null              // The sort order
-        );
-        List itemIds = new ArrayList<>();
-        while(cursor.moveToNext()) {
-            long itemId = cursor.getLong(
-                    cursor.getColumnIndexOrThrow(DB.KEY_ID));
-            itemIds.add(itemId);
-            text_Area.append(Long.toString(itemId));
+        Cursor data = db.getData();
+        ArrayList<String> listData = new ArrayList<>();
+        while(data.moveToNext()) {
+            listData.add(data.getString(1));
         }
-        cursor.close();
-        db.close();
+        ListAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, listData);
+        UsersList.setAdapter(adapter);
+    }
+
+    private void toastMessage(String message){
+        Toast.makeText(this,message, Toast.LENGTH_SHORT).show();
     }
 }
