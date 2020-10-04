@@ -18,7 +18,7 @@ public class MainActivity extends AppCompatActivity {
     DB db;
 
     private TextView txtName, txtNum;
-    private ListView UsersList;
+    public ListView UsersList;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -54,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onClickRead(View view){
+        UsersList = (ListView) findViewById(R.id.listView);
         Cursor data = db.getData();
         ArrayList<String> listData = new ArrayList<>();
         while(data.moveToNext()) {
